@@ -1,6 +1,9 @@
 library(ggplot2)
 library(expsmooth)
 library(fpp)
+library(smooth)
+library("TTR") ## Teacher's recommendation
+library(imputeTS)
 
 ### Load Data
 
@@ -30,10 +33,10 @@ hours$holiday<-as.factor(hours$holiday)
 aggregate(days$temp~days$season, FUN= function(x) c(mean = mean(x), median = median(x)))
 
 
-boxplot(days$temp~days$season)
+boxplot(days$temp~days$season, xlab="Seasons", ylab="Temperature")
 
 
-cor(days[, c("temp", "atemp", "cnt")])
+cor(days[, c("temp", "atemp", "cnt", "casual", "registered" )])
 
 
 ### Means per month
@@ -50,11 +53,41 @@ cor(hours[c("temp", "casual", "registered")])
 
 plot(days$dteday, days$cnt, type="l")
 
-boxplot(days$cnt)
+?boxplot
+
+smoothed = holt(ts(days$cnt, start = min(days$dteday), end = max(days$dteday)))
 
 
-smoothed = ses(ts(days$cnt, start = min(days$dteday), end = max(days$dteday)))
+## Using library 'smooth'
+es(ts(days$cnt, start = min(days$dteday), end = max(days$dteday)), h=18, holdout=TRUE, silent=FALSE)
+# Using library TTR
+smoothed = SMA(ts(days$cnt, start = min(days$dteday), end = max(days$dteday)), n=7)
 
-plot(cbind(smoothed$fitted, days$cnt))
 
-?hw
+p = ggplot() + 
+  geom_line(data = days, aes(x = days$dteday, y = days$cnt), color = "lightblue") +
+  geom_line(data = days, aes(x = days$dteday, y = smoothed), color = "red") +
+  xlab('Dates') +
+  ylab('Number of rentals')
+
+print(p)
+
+
+## Decomposing the time series
+
+
+smoothed = SMA(ts(days$cnt, start = min(days$dteday), end = max(days$dteday)), n=7)
+
+timeseries <- ts(smoothed[!is.na(smoothed)], frequency = 30)
+plot(timeseries)
+
+decomposed <- decompose(timeseries)
+plot(decomposed)
+
+?decompose
+plot(ts(smoothed, start = min(days$dteday), end = max(days$dteday), frequency = 30))
+
+?ts
+
+
+?SMA
