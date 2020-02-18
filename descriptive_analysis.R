@@ -74,20 +74,15 @@ print(p)
 
 
 ## Decomposing the time series
-
-
 smoothed = SMA(ts(days$cnt, start = min(days$dteday), end = max(days$dteday)), n=7)
 
+# Remove missing values
 timeseries <- ts(smoothed[!is.na(smoothed)], frequency = 30)
 plot(timeseries)
 
 decomposed <- decompose(timeseries)
 plot(decomposed)
 
-?decompose
-plot(ts(smoothed, start = min(days$dteday), end = max(days$dteday), frequency = 30))
 
-?ts
-
-
-?SMA
+## Remove the seasonal component
+decomposed$x-decomposed$season
