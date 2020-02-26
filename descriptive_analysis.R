@@ -74,15 +74,33 @@ print(p)
 
 
 ## Decomposing the time series
-smoothed = SMA(ts(days$cnt, start = min(days$dteday), end = max(days$dteday)), n=7)
+cnt_ma = SMA(ts(days$cnt, start = min(days$dteday), end = max(days$dteday)), n=7)
 
 # Remove missing values
-timeseries <- ts(smoothed[!is.na(smoothed)], frequency = 30)
-plot(timeseries)
+count_ma <- ts(cnt_ma[!is.na(cnt_ma)], frequency = 30)
+plot(count_ma)
 
-decomposed <- decompose(timeseries)
+decomposed <- decompose(count_ma)
 plot(decomposed)
 
+# Removed seasonal component
+deseasonal_cnt <- count_ma - decomposed$season
+plot(count_ma - decomposed$season)
 
-## Remove the seasonal component
-decomposed$x-decomposed$season
+
+#Is the test stationary ?
+adf.test(count_ma)
+
+## The timeseries is not stationary, because there is a decreasing tendency in the plot
+Acf(timeseries)
+
+Pacf(timeseries)
+
+## PS: a small alpha value means that the most recent values does not explain very well the variation in the mean.
+
+########################################
+##### Forecasting with  ARIMA  #########
+########################################
+
+?Arima
+arima.result <- Arima(deseasonal_cnt)
