@@ -93,12 +93,14 @@ print(p)
 ### Decomposing the time series
 #####################
 smoothed = SMA(ts(days$cnt, start = min(days$dteday), end = max(days$dteday)), n=7)
+#cnt_ma <- smoothed
 
 
 ## Remove missing values
 # ----- transform cnt_ma into a time series with frequency 30 named count_ma
 timeseries <- ts(smoothed[!is.na(smoothed)], frequency = 30)
 plot(timeseries)
+count_ma <- timeseries
 
 
 # ----- Use decompose() or stl() to examine and possibly remove components of the series
@@ -108,7 +110,7 @@ plot(decomposed)
 
 ## Remove the seasonal component
 # ----- create a time series deseasonal_cnt by removing the seasonal component
-decomposed$x-decomposed$season
+deseasonal_cnt <- decomposed$x-decomposed$season
 
 
 
@@ -117,7 +119,11 @@ decomposed$x-decomposed$season
 #####################
 # ----- Is the serie count_ma stationary? If not, how to make stationary 
 # ----- (Use adf.test(), ACF, PACF plots )
+res_test <- adf.test(count_ma)
 
+layout(matrix(1:2, nrow=1))
+Acf(count_ma)
+Pacf(count_ma)
 
 
 #####################
