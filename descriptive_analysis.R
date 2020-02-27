@@ -141,19 +141,24 @@ Pacf(count_ma)
 # ----- Fit an ARIMA model to deseasonal_cnt 
 # ----- (Examine the ACF and PACF plots, trends, residuals)
 
-arima.result <- arima(deseasonal_cnt)
-arima.forecast <- forecast(arima.result, h=31)
+arima.result <- arima(deseasonal_cnt, order = c(2,0,0))
+arima.forecast <- forecast(arima.result, h=25)
+plot(arima.forecast)
 
 # ----- What is your conclusion?
 
+Acf(deseasonal_cnt)
+Pacf(deseasonal_cnt)
 
 ## II. Fit an ARIMA with Auto-ARIMA
 
 # ----- Use auto.arima() function to fit an ARIMA model of deseasonal_cnt
-
+auto.arima.result <- auto.arima(deseasonal_cnt)
+auto.arima.forecast <- forecast(auto.arima.result, h=25)
+plot(auto.arima.forecast)
 
 # -----  Check residuals, which should have no patterns and be normally distributed
-
+plot(auto.arima.forecast$residuals)
 
 ## III.Evaluate and iterate
 
