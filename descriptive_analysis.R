@@ -92,9 +92,9 @@ plot(count_ma - decomposed$season)
 adf.test(count_ma)
 
 ## The timeseries is not stationary, because there is a decreasing tendency in the plot
-Acf(timeseries)
+Acf(count_ma)
 
-Pacf(timeseries)
+Pacf(count_ma)
 
 ## PS: a small alpha value means that the most recent values does not explain very well the variation in the mean.
 
@@ -102,5 +102,8 @@ Pacf(timeseries)
 ##### Forecasting with  ARIMA  #########
 ########################################
 
-?Arima
-arima.result <- Arima(deseasonal_cnt)
+arima(count_ma)
+arima.result <- arima(deseasonal_cnt)
+arima.forecast <- forecast(arima.result, h=31)
+
+plot(arima.forecast)
