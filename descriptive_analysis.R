@@ -103,20 +103,12 @@ deseasonal_cnt <- count_ma - decomposed$season
 plot(count_ma - decomposed$season)
 
 
-#Is the test stationary ?
-adf.test(count_ma)
-
-## The timeseries is not stationary, because there is a decreasing tendency in the plot
-Acf(count_ma)
-Pacf(count_ma)
-
-## PS: a small alpha value means that the most recent values does not explain very well the variation in the mean.
-
-
-
 ## Remove the seasonal component
 # ----- create a time series deseasonal_cnt by removing the seasonal component
 deseasonal_cnt <- decomposed$x-decomposed$season
+
+
+## PS: a small alpha value means that the most recent values does not explain very well the variation in the mean.
 
 
 
@@ -125,10 +117,10 @@ deseasonal_cnt <- decomposed$x-decomposed$season
 #####################
 # ----- Is the serie count_ma stationary? If not, how to make stationary 
 # ----- (Use adf.test(), ACF, PACF plots )
-res_test <- adf.test(count_ma)
+res_test <- adf.test(count_ma) ## p-value = 0.9753 means the timeseries is non-stationary
 
 layout(matrix(1:2, nrow=1))
-Acf(count_ma)
+Acf(count_ma) ## The timeseries is not stationary, because there is a decreasing tendency in the plot
 Pacf(count_ma)
 
 
@@ -141,7 +133,7 @@ Pacf(count_ma)
 # ----- Fit an ARIMA model to deseasonal_cnt 
 # ----- (Examine the ACF and PACF plots, trends, residuals)
 
-arima.result <- arima(deseasonal_cnt, order = c(2,0,0))
+arima.result <- arima(deseasonal_cnt)
 arima.forecast <- forecast(arima.result, h=25)
 plot(arima.forecast)
 
@@ -158,21 +150,32 @@ auto.arima.forecast <- forecast(auto.arima.result, h=25)
 plot(auto.arima.forecast)
 
 # -----  Check residuals, which should have no patterns and be normally distributed
-plot(auto.arima.forecast$residuals)
+plot(auto.arima.forecast$residuals) #no patterns
+hist(auto.arima.forecast$residuals) #normally distributed
 
 ## III.Evaluate and iterate
 
 # -----  If there are visible patterns or bias, plot ACF/PACF. 
 # -----  Are any additional order parameters needed?
 
+fit<-auto.arima(deseasonal_cnt, seasonal=FALSE)
+fit
+tsdisplay(residuals(fit), lag.max=45, main='(1,1,1) Model Residuals') 
 
 # ----- Refit model if needed. Compare model errors and fit criteria such as AIC or BIC.
 
+fit2 = arima(deseasonal_cnt, order=c(1,1,7))
+fit2
+tsdisplay(residuals(fit2), lag.max=15, main='Seasonal Model Residuals')
+
+### Therefore, we have chosen the fit2, as it has the smaller AIC
 
 # ----- Calculate forecast using the chosen model
 
+fcast <- forecast(fit2, h=25)
 
 # ----- plot both the original and the forecasted time series
+plot(fcast)
 
 
 ## IV.Forecasting
@@ -180,11 +183,23 @@ plot(auto.arima.forecast$residuals)
 # ----- Split the data into training and test times series 
 # ----- (test starting at observation 700, use function window)
 
+hold <- window(ts(deseasonal_cnt), start=700)
 
 # ----- fit an Arima model, manually and with Auto-Arima on the training part
 
-
 # ----- forecast the next 25 observation and plot the original ts and the forecasted one.
 
+fit_no_holdout = arima(ts(deseasonal_cnt[-c(700:725)]), order=c(1,1,7))
+
+fcast_no_holdout <- forecast(fit_no_holdout,h=25)
+plot(fcast_no_holdout, main=" ")
+lines(ts(deseasonal_cnt))
+
+fit3 = auto.arima(deseasonal_cnt, seasonal=FALSE)
+seas_fcast <- forecast(fit3, h=25)
+plot(seas_fcast) 
+lines(ts(deseasonal_cnt))
 
 # ----- What do you observe?
+
+###
