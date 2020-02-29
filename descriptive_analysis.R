@@ -190,12 +190,13 @@ hold <- window(ts(deseasonal_cnt), start=700)
 # ----- forecast the next 25 observation and plot the original ts and the forecasted one.
 
 fit_no_holdout = arima(ts(deseasonal_cnt[-c(700:725)]), order=c(1,1,7))
-
+fit_no_holdout
 fcast_no_holdout <- forecast(fit_no_holdout,h=25)
 plot(fcast_no_holdout, main=" ")
 lines(ts(deseasonal_cnt))
 
-fit3 = auto.arima(deseasonal_cnt, seasonal=FALSE)
+fit3 = auto.arima(ts(deseasonal_cnt[-c(700:725)]), seasonal=FALSE)
+fit3
 seas_fcast <- forecast(fit3, h=25)
 plot(seas_fcast) 
 lines(ts(deseasonal_cnt))
