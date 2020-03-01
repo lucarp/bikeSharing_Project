@@ -118,8 +118,8 @@ deseasonal_cnt <- decomposed$x-decomposed$season
 # ----- Is the serie count_ma stationary? If not, how to make stationary 
 # ----- (Use adf.test(), ACF, PACF plots )
 res_test <- adf.test(count_ma) ## p-value = 0.9753 means the timeseries is non-stationary
-
-layout(matrix(1:2, nrow=1))
+res_test
+#layout(matrix(1:2, nrow=1))
 Acf(count_ma) ## The timeseries is not stationary, because there is a decreasing tendency in the plot
 Pacf(count_ma)
 
@@ -134,22 +134,25 @@ Pacf(count_ma)
 # ----- (Examine the ACF and PACF plots, trends, residuals)
 
 arima.result <- arima(deseasonal_cnt)
+arima.result
 arima.forecast <- forecast(arima.result, h=25)
 plot(arima.forecast)
 
-# ----- What is your conclusion?
+tsdisplay(residuals(arima.result), lag.max=45, main='(1,1,1) Model Residuals') 
 
-Acf(deseasonal_cnt)
-Pacf(deseasonal_cnt)
+# ----- What is your conclusion?
+## AIC is higher than with the parameters proposed by Auto.Arima
 
 ## II. Fit an ARIMA with Auto-ARIMA
 
 # ----- Use auto.arima() function to fit an ARIMA model of deseasonal_cnt
-auto.arima.result <- auto.arima(deseasonal_cnt)
+auto.arima.result <- auto.arima(deseasonal_cnt, seasonal = FALSE)
+auto.arima.result
 auto.arima.forecast <- forecast(auto.arima.result, h=25)
 plot(auto.arima.forecast)
 
 # -----  Check residuals, which should have no patterns and be normally distributed
+layout(matrix(c(1,2), 2, 2, byrow = TRUE))
 plot(auto.arima.forecast$residuals) #no patterns
 hist(auto.arima.forecast$residuals) #normally distributed
 
@@ -160,7 +163,7 @@ hist(auto.arima.forecast$residuals) #normally distributed
 
 fit<-auto.arima(deseasonal_cnt, seasonal=FALSE)
 fit
-tsdisplay(residuals(fit), lag.max=45, main='(1,1,1) Model Residuals') 
+tsdisplay(residuals(fit), lag.max=45, main='Model Residuals') 
 
 # ----- Refit model if needed. Compare model errors and fit criteria such as AIC or BIC.
 
@@ -203,4 +206,4 @@ lines(ts(deseasonal_cnt))
 
 # ----- What do you observe?
 
-###
+### 
