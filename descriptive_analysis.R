@@ -59,6 +59,14 @@ cbind(aggregate(days$temp~days$mnth + days$yr, FUN= mean),
   aggregate(days$windspeed~days$mnth + days$yr, FUN= mean)[3],
   aggregate(days$cnt~days$mnth + days$yr, FUN= mean)[3])
 
+layout(matrix(1:4, nrow=2))
+plot(x=1:12, y=unlist(aggregate(days$temp~days$mnth, FUN= mean)[2]), type="b", lty=1, xlab="Months", ylab="Temp")
+#plot(x=1:12, y=unlist(aggregate(days$atemp~days$mnth, FUN= mean)[2]), type="b", lty=1, xlab="Months", ylab="Atemp")
+plot(x=1:12, y=unlist(aggregate(days$hum~days$mnth, FUN= mean)[2]), type="b", lty=1, xlab="Months", ylab="Humidity")
+plot(x=1:12, y=unlist(aggregate(days$windspeed~days$mnth, FUN= mean)[2]), type="b", lty=1, xlab="Months", ylab="Windspeed")
+plot(x=1:12, y=unlist(aggregate(days$cnt~days$mnth, FUN= mean)[2]), type="b", lty=1, xlab="Months", ylab="Total rentals")
+dev.off()
+
 
 ## Correlation between temperature and bike rentals
 # ----- Is temperature associated with bike rentals (registered vs. casual)?
@@ -97,6 +105,9 @@ plot(count_ma)
 # ----- Use decompose() or stl() to examine and possibly remove components of the series
 decomposed <- decompose(count_ma)
 plot(decomposed)
+
+stled <- stl(count_ma, 5)
+plot(stled)
 
 # Removed seasonal component
 deseasonal_cnt <- count_ma - decomposed$season
@@ -138,7 +149,7 @@ arima.result
 arima.forecast <- forecast(arima.result, h=25)
 plot(arima.forecast)
 
-tsdisplay(residuals(arima.result), lag.max=45, main='(1,1,1) Model Residuals') 
+tsdisplay(residuals(arima.result), lag.max=45, main='(0,0,0) Model Residuals') 
 
 # ----- What is your conclusion?
 ## AIC is higher than with the parameters proposed by Auto.Arima
@@ -173,6 +184,25 @@ tsdisplay(residuals(fit2), lag.max=15, main='Seasonal Model Residuals')
 
 ### Therefore, we have chosen the fit2, as it has the smaller AIC
 
+best <- 1e6
+best_param <- c()
+for(a in 1:20){
+  for(b in 1:20){
+    for(c in 1:20){
+      temp <- arima(deseasonal_cnt, order=c(a,b,c)) 
+      if(temp$aic < best){
+        best_param <- c(a, b, c)
+        best <- temp$aic
+        print(best_param)
+      }
+    }
+  }
+}
+fit2 = arima(deseasonal_cnt, order=best_param)
+fit2
+tsdisplay(residuals(fit2), lag.max=15, main='Seasonal Model Residuals')
+
+
 # ----- Calculate forecast using the chosen model
 
 fcast <- forecast(fit2, h=25)
@@ -192,7 +222,9 @@ hold <- window(ts(deseasonal_cnt), start=700)
 
 # ----- forecast the next 25 observation and plot the original ts and the forecasted one.
 
-fit_no_holdout = arima(ts(deseasonal_cnt[-c(700:725)]), order=c(1,1,7))
+#best_param <- c(1,1,7)
+  
+fit_no_holdout = arima(ts(deseasonal_cnt[-c(700:725)]), order=best_param)
 fit_no_holdout
 fcast_no_holdout <- forecast(fit_no_holdout,h=25)
 plot(fcast_no_holdout, main=" ")
